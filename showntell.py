@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#show and tell is for the table height to give the cube to some one
 import rospy
 import struct
 import baxter_interface
@@ -30,6 +31,9 @@ left = baxter_interface.Limb('left')
 left.set_joint_position_speed(1.0)
 
 
+#################################
+#pre existing solver from baxter
+#################################
 def ik_solve(limb,p,q):
     #rospy.init_node("node1")
     global right
@@ -102,7 +106,7 @@ def ik_solve(limb,p,q):
     except:
         mess = 1
         print "FATALITY" 
-
+###########################
 
 def main():
     rospy.sleep(.2)
@@ -125,21 +129,26 @@ def main():
 
 
     #rg.calibrate()
+    #positions for the arm to move
     Q = Quaternion(x=0.7523426889287905, y=-0.6584930265055371, z=0.0010142237493953393, w=0.019141154854433382)
     S1p = Point(x=.55,y=-.569769,z=.12)
     S2p = Point(.70,-.2651429,.12)
     S3p = Point(.55,.00738,.12)
+    #initial postion
     goalP =  Point(x=0.6586872879757675, y=0.1567994652872984, z=0.28566015793134736)
     Q =  Quaternion(x=1, y=0, z=0, w=0)
 
+    #goal 1
     goalP1 =  Point(x=0.6586872879757675, y=0.3567994652872984, z=0.28566015793134736)
     Q1 =  Quaternion(y=0, z=0, x=0.707, w=0.707)
 
 
+    #goal 2
     goalP2 =  Point(x=0.246586872879757675, y=0.3567994652872984, z=0.28566015793134736)
     Q2 =  Quaternion(y=0, z=0, x=-0.707, w=0.707)
 
 
+    #goal 3
     goalP3 =  Point(x=1.2586872879757675, y=0.3567994652872984, z=0.08566015793134736)
     Q3 =  Quaternion(x=0, y=0, z=-0.707, w=0.707)
 
@@ -151,6 +160,8 @@ def main():
     gripper = baxter_interface.Gripper('left', CHECK_VERSION)
     print 'calibrate'
     #gripper.close()
+
+    # alternate position for the arms to move
 
     #rospy.sleep(2)
     #S2j = ik_solve('left',goalP1,Q1)
@@ -168,30 +179,8 @@ def main():
     #left.move_to_joint_positions(S4j)
     #rospy.sleep(2)
     #left.move_to_joint_positions(S1j)
-    ''' 
-    #goal
-    goalP1 = Point(x=1.2583525662953068, y=0.32040226742002664, z=0.2788726696784476)
-    goalQ1 = Quaternion(x=0.7631680830198564, y=-0.02755537954971319, z=0.6430040504122455, w=-0.05797386713956011)
-    goal = ik_solve('left',goalP1,goalQ1)
     
-    #pregoal
-    pregoalP1 = Point(x=1.2167327379279873, y=0.24181852256605696, z=0.6219109786693553)
-    pregoalQ1 = Quaternion(x=0.728887712337905, y=-0.03934813515099991, z=0.6776550752614304, w=-0.08920776891829153)
-    pregoal = ik_solve('left',pregoalP1,pregoalQ1)
-    #pregrip
-    pregripP1 = Point(x=0.7564160720416103, y=0.19026210082775052, z=-0.11989789999384434)
-    pregripQ1 = Quaternion(x=0.9996463609432708, y=0.023193564174948188, z=0.008769810118763982, w=0.009607396328842483)
-    pregrip = ik_solve('left',pregripP1,pregripQ1)
-    #grip
-    gripP1 = Point(x=0.7509983017123646, y=0.18440098049341058, z=-0.1922153309208344)
-    gripQ1 = Quaternion(x=0.9993950013795004, y=0.0038452097622827075, z=0.022759519354074668, w=0.026016338295845813)
-    grip = ik_solve('left',gripP1,gripQ1)
-    #safetyup
-    safupP = Point(x=0.8302343717427884, y=0.23686341493294455, z=0.3954032327879931)
-    safupQ =  Quaternion(x=0.9908886961272979, y=0.06226809909369729, z=0.10950946265922441, w=-0.047644027017968923)
-    safup = ik_solve('left',safupP,safupQ)
-    ''' 
-
+    #set positions for the joints to move to
     pregrab = {'left_w0': 0.6396699885482175, 'left_w1': 1.2191312311719327, 'left_w2': -0.8559612796400609, 'left_e0': -0.9621894492011258, 'left_e1': 1.5316798167035857, 'left_s0': -0.5288398766234964, 'left_s1': -0.8655486595643447} 
 
 
@@ -199,6 +188,7 @@ def main():
 
     give = {'left_w0': 0.7589369948063085, 'left_w1': 0.786548648988246, 'left_w2': 0.0011504855909140602, 'left_e0': -0.7650729179578502, 'left_e1': -0.049854375606275945, 'left_s0': -0.9042816744584514, 'left_s1': -0.40650490878963463}
     
+    #make the movement of the arms to certain positions for the block and give.
     left.move_to_joint_positions(S1j)
     rospy.sleep(0.5)
     left.move_to_joint_positions(pregrab)
@@ -211,23 +201,6 @@ def main():
     gripper.open(block=True)
     rospy.sleep(2)
     left.move_to_joint_positions(S1j)
-    ''' 
-    #left.move_to_joint_positions(pregrip)
-    rospy.sleep(3)
-    #left.move_to_joint_positions(grip)
-    gripper.close(block=True)
-    rospy.sleep(0.5)
-    #left.move_to_joint_positions(safup)
-    #left.move_to_joint_positions(pregoal)
-    #left.move_to_joint_positions(goal)
-    gripper.open(block=True)
-    rospy.sleep(1)
-    #left.move_to_joint_positions(S1j)
-    '''
 
 main()
-#rospy.sleep(10)
-
-#left.move_to_joint_positions({'left_s0': -0.7597039843322755, 'left_s1': -0.9407137170959473, 'left_w0': 0.7942185520202637, 'left_w1': -0.06596117380371094, 'left_w2': -1.8983012228393557, 'left_e0': 2.859723680548096, 'left_e1': 0.1580000209716797})
-#right.move_to_joint_positions({'right_s0': -0.7597039843322755, 'right_s1': -0.9407137170959473, 'right_w0': 0.7942185520202637, 'right_w1': -0.06596117380371094, 'right_w2': -1.8983012228393557, 'right_e0': 2.859723680548096, 'right_e1': 0.1580000209716797})
 

@@ -1,4 +1,6 @@
 #!/usr/bin/python
+#grabs the current position of the endpoint form the quaternions and the
+#position as well as the joint angles so they can be used elsewhere
 import baxter_interface
 import rospy
 

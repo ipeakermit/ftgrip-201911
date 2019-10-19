@@ -1,4 +1,6 @@
 #!/usr/bin/python
+#show and tell box is for the use of a prescripted movement to show the baxter
+#robot grabbing a block and giving it to some one
 import rospy
 import struct
 import baxter_interface
@@ -29,7 +31,9 @@ right.set_joint_position_speed(1.0)
 left = baxter_interface.Limb('left')
 left.set_joint_position_speed(1.0)
 
-
+#################################
+#pre existing solver from baxter
+#################################
 def ik_solve(limb,p,q):
     #rospy.init_node("node1")
     global right
@@ -102,7 +106,7 @@ def ik_solve(limb,p,q):
     except:
         mess = 1
         print "FATALITY" 
-
+########################
 
 def main():
     rospy.sleep(.2)
@@ -126,21 +130,23 @@ def main():
     if lg.calibrated() == False:
         lg.calibrate()
     #rg.calibrate()
+    #positions for the arm to move
     Q = Quaternion(x=0.7523426889287905, y=-0.6584930265055371, z=0.0010142237493953393, w=0.019141154854433382)
     S1p = Point(x=.55,y=-.569769,z=.12)
     S2p = Point(.70,-.2651429,.12)
     S3p = Point(.55,.00738,.12)
+    #initial postion
     goalP =  Point(x=0.6586872879757675, y=0.1567994652872984, z=0.28566015793134736)
     Q =  Quaternion(x=1, y=0, z=0, w=0)
-
+    #goal 1
     goalP1 =  Point(x=0.6586872879757675, y=0.3567994652872984, z=0.28566015793134736)
     Q1 =  Quaternion(y=0, z=0, x=0.707, w=0.707)
 
-
+    #goal 2
     goalP2 =  Point(x=0.246586872879757675, y=0.3567994652872984, z=0.28566015793134736)
     Q2 =  Quaternion(y=0, z=0, x=-0.707, w=0.707)
 
-
+    #goal 3
     goalP3 =  Point(x=1.2586872879757675, y=0.3567994652872984, z=0.08566015793134736)
     Q3 =  Quaternion(x=0, y=0, z=-0.707, w=0.707)
 
@@ -153,6 +159,8 @@ def main():
     print 'calibrate'
     gripper.calibrate()
     #gripper.close()
+
+    # alternate position for the arms to move
 
     #rospy.sleep(2)
     #S2j = ik_solve('left',goalP1,Q1)
@@ -194,7 +202,7 @@ def main():
     safup = ik_solve('left',safupP,safupQ)
 
 
-
+    #do all the movements that were specified
     left.move_to_joint_positions(pregrip)
     rospy.sleep(3)
     left.move_to_joint_positions(grip)
@@ -209,8 +217,5 @@ def main():
 
 
 main()
-#rospy.sleep(10)
 
-#left.move_to_joint_positions({'left_s0': -0.7597039843322755, 'left_s1': -0.9407137170959473, 'left_w0': 0.7942185520202637, 'left_w1': -0.06596117380371094, 'left_w2': -1.8983012228393557, 'left_e0': 2.859723680548096, 'left_e1': 0.1580000209716797})
-#right.move_to_joint_positions({'right_s0': -0.7597039843322755, 'right_s1': -0.9407137170959473, 'right_w0': 0.7942185520202637, 'right_w1': -0.06596117380371094, 'right_w2': -1.8983012228393557, 'right_e0': 2.859723680548096, 'right_e1': 0.1580000209716797})
 

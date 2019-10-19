@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#Delivered solution for the Fault tolerant gripping system
 import collections
 from scipy import stats
 import rospy
@@ -43,22 +44,28 @@ rospy.init_node("marker_ik_example_movement",disable_signals=True)
 global tf_buffer
 tf_buffer = tf2_ros.Buffer(rospy.Duration(1200.0)) #tf buffer length
 
-
+#set limb speed
 right = baxter_interface.Limb('right')
 right.set_joint_position_speed(1.0)
 
 left = baxter_interface.Limb('left')
 left.set_joint_position_speed(1.0)
+#prev time for marker callback 
 global prev_time
 prev_time = 0
+#range array for laser range finder
 global range_array
 range_array = collections.deque(5*[(0.0,0.0)], 5)
+#endpoint array of arm positions
 global endpoint_array
 endpoint_array = []
+#array of markers
 global marker_array
 marker_array = []
+#deque that stores all the last marker positions
 global last_left_ar_posns
 last_left_ar_posns = collections.deque(20*[(0.0,0.0)], 20)
+#default marker position
 global ar_pos_left
 ar_pos_left = (0.0,0.0)
 global recently_moved
@@ -73,28 +80,31 @@ def main():
     global right
     global lg
     global left
-
+    #subscribe to all necessary sources
     tf_listener = tf2_ros.TransformListener(tf_buffer)
+    #range finder
     rospy.Subscriber('/robot/range/left_hand_range/state', Range, callback_range,queue_size=1)
+    #Alvar markers
     rospy.Subscriber('/ar_pose_marker', AlvarMarkers, callback_marker,queue_size=1)
+    #endpoint state
     rospy.Subscriber('/robot/limb/left/endpoint_state',EndpointState,callback_endpoint,queue_size=1)
+    #set speed
     right = baxter_interface.Limb('right')
     right.set_joint_position_speed(1.0)
     left = baxter_interface.Limb('left')
     left.set_joint_position_speed(1.0)
     camdata = Point()
+    #left gripper
     lg = baxter_interface.Gripper('left')
     
-    yfactor = .000667917
-    xfactor = .0008135938
-
+    #calibrate gripper
     if lg.calibrated() == False:
         lg.calibrate()
     #rg.calibrate()
     lg.open()
     quit = "n"
     
-
+    #starting points for arm
     pos = Point(x=0.50,
     y=0.182539067108,
     z=0.0998704377885)
@@ -124,7 +134,7 @@ def main():
     # lab small table height
     #surface_z = -0.0791295619731
         
-
+    #pre pose height 
     pre_pose_high = Point(x=0.50,
     y=0.272539067108,
     z=0.3998704377885)
@@ -187,19 +197,6 @@ def main():
         print "clear"
         last_left_ar_posns.clear()
 
-def yolo(left, lg):
-    pos = Point(x=0.543415387534,
-    y=0.760834465653,
-    z=1.32829474477)
-    quat = Quaternion(x=-0.234651473267,
-    y=0.195569757753,
-    z=-0.0251152703811,
-    w=0.951872039268)
-    joints = ik_solve('left', pos, quat)
-    left.move_to_joint_positions(joints)
-    lg.open()
-
-
 def find_surface(pos, quat):
     global range_array
     # sleep until range_array is full
@@ -237,6 +234,7 @@ def check_front_right(pos, quat):
 
 # Arm is above some surface. Move to hover above it.
 def move_to_low_hover(pos, quat):
+    print "Calibrating"
     global range_array
     while np.mean(range_array) > 65:
         print "coarse"
@@ -262,6 +260,7 @@ def move_to_low_hover(pos, quat):
         rospy.sleep(1)
         print range_array
         print np.mean(range_array)
+    print "Finished calibration"
     return pos
 
 
@@ -284,22 +283,25 @@ def update_position(pose):
     x = pose.position.x
     y = pose.position.y
     last_left_ar_posns.appendleft((x,y))
+    #get all x and y positions in seperate arrays
     x_data = [i[0] for i in last_left_ar_posns]
     y_data = [i[1] for i in last_left_ar_posns]
     x_zscore = stats.zscore(x_data)
     y_zscore = stats.zscore(y_data)
-    # Do not update position until deque is full
     error_count = 0
     clean_x = []
     clean_y = []
+    # Do not update position until deque is full
     if last_left_ar_posns[len(last_left_ar_posns) - 1][0] != 0.0:
         for i in range(0,len(last_left_ar_posns)):
             #marker1 = marker1[(np.abs(stats.zscore(marker1)) < 6).all(axis=1)]
+            #delete outliers for x
             if (abs(x_zscore[i]) < 1):
                 clean_x.append(last_left_ar_posns[i][0])
             else:
                 error_count += 1
             
+            #delete outliers for y
             if (abs(y_zscore[i]) < 1):
                 clean_y.append(last_left_ar_posns[i][1])
             else:
@@ -317,22 +319,25 @@ def update_position(pose):
         
     #print ar_pos_left 
 
-
+#call back for range finder
 def callback_range(data):
     global range_array
     range_array.append(data.range)
-
+#callback for endpoint
 def callback_endpoint(data):
     global endpoint_array
     outstr =  str(data.header.stamp) + "," + str(data.pose.position.x)+ "," + str(data.pose.position.y) + ","+ str(data.pose.position.z)
     endpoint_array.append(outstr)
 
+#callback for marker
 def callback_marker(data):
     global marker_array
     global poseglobal
     global prev_time
     for marker in data.markers:
+        #check marker in range
         if marker.id != 255 and marker.id != 0:
+            #check not right hand seeing
             if not "right" in marker.header.frame_id:
                 tf_pos = translate_frame(PoseStamped(header=marker.header,pose=marker.pose.pose), "base")
                 update_position(tf_pos.pose)
@@ -342,6 +347,8 @@ def callback_marker(data):
                 poseglobal = target_from_marker(ps)
 
 ### ALL FROM TEG FROM HERE DOWN ###
+#code that was written before project
+###################################
 def translate_frame(ps,frame):
     #print 'translate_frame',pose
     global tf_buffer

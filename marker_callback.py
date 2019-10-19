@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#testing of how the marker subscriber/listener system works
 import rospy
 from ar_track_alvar_msgs.msg import AlvarMarkers
 

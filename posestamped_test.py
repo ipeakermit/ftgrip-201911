@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#script simply used to work out how the posestamped system worked.
 import baxter_interface
 import rospy
 import tf
@@ -13,6 +14,7 @@ from geometry_msgs.msg import (
 
 rospy.init_node("test4")
 
+#append the information from pdict into pose
 def pose_stamped(pdict):
         pose = PoseStamped()
         pose.header.stamp = rospy.Time.now()

@@ -1,4 +1,5 @@
 #!/usr/bin/python
+#This file is used to move the arm a certain distance using keyboard inputs
 import rospy
 import struct
 import baxter_interface
@@ -23,13 +24,15 @@ from sensor_msgs.msg import (JointState,
 
 from baxter_interface import CHECK_VERSION
 rospy.init_node('marker_ik_example_movement')
+#setting limb speed
 right = baxter_interface.Limb('right')
 right.set_joint_position_speed(1.0)
 
 left = baxter_interface.Limb('left')
 left.set_joint_position_speed(1.0)
-
-
+#################################
+#pre existing solver from baxter
+#################################
 def ik_solve(limb,p,q):
     #rospy.init_node("node1")
     global right
@@ -101,10 +104,12 @@ def ik_solve(limb,p,q):
         return limb_joints
     except:
         mess = 1
-        print "FATALITY" 
+        print "FATALITY"
+##############################
 
 def get_user_input(pos,userin):
     mov_factor = 0.05
+    #get user input in a certain form to get it to move
     #userin = raw_input("move (wasd or lp) or quit(q)")
     for userin_next in userin:
         print pos
@@ -134,7 +139,7 @@ def main():
     global lg
     global left
     global smile
-
+    #set arm speed
     right = baxter_interface.Limb('right')
     right.set_joint_position_speed(1.0)
     left = baxter_interface.Limb('left')
@@ -148,6 +153,7 @@ def main():
     if lg.calibrated() == False:
         lg.calibrate()
     #rg.calibrate()
+    #input certain set values of where the arm will start and go 
     Q = Quaternion(x=0.7523426889287905, y=-0.6584930265055371, z=0.0010142237493953393, w=0.019141154854433382)
     S1p = Point(x=.55,y=-.569769,z=.12)
     S2p = Point(.70,-.2651429,.12)
@@ -166,7 +172,7 @@ def main():
     print "1"
     quit = "n"
     
-
+    #pos and quat to solve for 
     pos = Point(x=0.578951563602,
     y=0.182539067108,
     z=0.0998704377885)
@@ -174,7 +180,7 @@ def main():
     y=0.989469457861,
     z=0.00906167097681,
     w=0.0226885052115)
-
+    # do a certain prescripted movement.
     while (quit != "y"):
         for i in ["lllll","pp",
         "ll","pp",
@@ -190,7 +196,4 @@ def main():
             rospy.sleep(1)
 
 main()
-
-#left.move_to_joint_positions({'left_s0': -0.7597039843322755, 'left_s1': -0.9407137170959473, 'left_w0': 0.7942185520202637, 'left_w1': -0.06596117380371094, 'left_w2': -1.8983012228393557, 'left_e0': 2.859723680548096, 'left_e1': 0.1580000209716797})
-#right.move_to_joint_positions({'right_s0': -0.7597039843322755, 'right_s1': -0.9407137170959473, 'right_w0': 0.7942185520202637, 'right_w1': -0.06596117380371094, 'right_w2': -1.8983012228393557, 'right_e0': 2.859723680548096, 'right_e1': 0.1580000209716797})
 
